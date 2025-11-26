@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Buku Tamu</title>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 
     <style>
         body {
@@ -256,6 +257,24 @@
                 </div>
             </fieldset>
 
+            {{-- AREA TANDA TANGAN --}}
+            <fieldset>
+                <legend>Tanda Tangan Tamu</legend>
+                <div class="form-group">
+                    <p style="font-size: 0.9em; color: #666;">Silakan tanda tangan di kotak ini:</p>
+
+                    <div style="border: 2px dashed #00620c; background: #fff; border-radius: 5px;">
+                        <canvas id="signature-canvas" style="width: 100%; height: 200px; display: block;"></canvas>
+                    </div>
+
+                    <button type="button" id="clear-signature"
+                        style="margin-top: 10px; background: #d9534f; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Hapus
+                        Tanda Tangan</button>
+
+                    <input type="hidden" name="ttd_tamu_base64" id="ttd_tamu_base64">
+                </div>
+            </fieldset>
+
             <button type="submit" class="submit-button">Simpan Data Tamu</button>
         </form>
 
@@ -309,6 +328,40 @@
 
             // Panggil sekali saat halaman dimuat (untuk handle old input jika validasi gagal)
             generatePengiringForms();
+
+            // --- LOGIKA TANDA TANGAN ---
+            const canvas = document.getElementById('signature-canvas');
+            const signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgba(255, 255, 255, 0)', // Transparan atau Putih
+                penColor: 'rgb(0, 0, 0)'
+            });
+
+            // Fungsi Resize agar canvas tidak gepeng/pecah di HP
+            function resizeCanvas() {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                signaturePad.clear(); // Bersihkan saat resize
+            }
+            window.addEventListener("resize", resizeCanvas);
+            resizeCanvas(); // Panggil sekali saat awal load
+
+            // Tombol Clear
+            document.getElementById('clear-signature').addEventListener('click', function() {
+                signaturePad.clear();
+            });
+
+            // Saat Submit Form, pindahkan gambar ke input hidden
+            document.querySelector('form').addEventListener('submit', function(e) {
+                if (!signaturePad.isEmpty()) {
+                    const dataURL = signaturePad.toDataURL('image/png');
+                    document.getElementById('ttd_tamu_base64').value = dataURL;
+                } else {
+                    // Opsional: Jika tanda tangan wajib, uncomment baris ini:
+                    // e.preventDefault(); alert("Mohon tanda tangan terlebih dahulu.");
+                }
+            });
         });
     </script>
 </body>

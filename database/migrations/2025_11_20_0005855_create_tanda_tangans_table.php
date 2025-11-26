@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('tanda_tangans', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_tamu');
-            $table->string('ttd_satpam_masuk')->nullable();
+            $table->string('ttd_tamu')->nullable();
+            $table->string('ttd_satpam')->nullable();
             $table->string('ttd_operator')->nullable();
             $table->string('ttd_penerima')->nullable();
-            $table->string('ttd_satpam_keluar')->nullable();
             $table->timestamps();
         });
     }

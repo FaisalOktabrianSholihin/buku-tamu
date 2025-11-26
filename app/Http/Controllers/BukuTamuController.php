@@ -7,6 +7,9 @@ use App\Models\TamuPengiring;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
+use App\Models\TandaTangan; // Load model baru
+use Illuminate\Support\Facades\Storage; // Untuk simpan file gambar
+
 class BukuTamuController extends Controller
 {
     public function index()
@@ -67,25 +70,50 @@ class BukuTamuController extends Controller
             'qr_code' => $generatedQrCode,
         ]);
 
-        if ($request->has('nama_pengiring')) {
-            $list_nama = $request->input('nama_pengiring', []);
-            $list_jabatan = $request->input('jabatan_pengiring', []);
-            if (is_array($list_nama) && count($list_nama) > 0) {
+        // ini untuk ttd 
+        if ($request->filled('ttd_tamu_base64')) { // Cek input hidden dari view
 
-                foreach ($list_nama as $key => $nama) {
-                    // Hanya simpan jika nama tidak kosong
-                    if (!empty($nama)) {
+            // Ambil data base64 (format: data:image/png;base64,.....)
+            $image_parts = explode(";base64,", $request->ttd_tamu_base64);
 
-                        TamuPengiring::create([
-                            // Sesuai field di Model Anda:
-                            'id_tamu' => $tamu->id,  // ID dari tamu utama yg baru dibuat
-                            'nama'    => $nama,
-                            'jabatan' => $list_jabatan[$key] ?? '-', // Pakai strip jika jabatan kosong
-                        ]);
-                    }
+            if (count($image_parts) == 2) {
+                $image_base64 = base64_decode($image_parts[1]);
+
+                // Buat nama file unik
+                $fileName = 'ttd_tamu_' . $tamu->id . '_' . time() . '.png';
+                $path = 'tanda_tangan/' . $fileName;
+
+                // Simpan fisik file ke storage/app/public/tanda_tangan
+                Storage::disk('public')->put($path, $image_base64);
+
+                // Simpan ke Tabel 'tanda_tangans'
+                TandaTangan::create([
+                    'id_tamu' => $tamu->id,   // Ambil ID dari tamu yg baru dibuat
+                    'ttd_tamu' => $path,      // Path file gambar
+                    // Kolom ttd_satpam, dll dibiarkan null dulu
+                ]);
+            }
+        }
+
+        // if ($request->has('nama_pengiring')) {
+        $list_nama = $request->input('nama_pengiring', []);
+        $list_jabatan = $request->input('jabatan_pengiring', []);
+        if (is_array($list_nama) && count($list_nama) > 0) {
+
+            foreach ($list_nama as $key => $nama) {
+                // Hanya simpan jika nama tidak kosong
+                if (!empty($nama)) {
+
+                    TamuPengiring::create([
+                        // Sesuai field di Model Anda:
+                        'id_tamu' => $tamu->id,  // ID dari tamu utama yg baru dibuat
+                        'nama'    => $nama,
+                        'jabatan' => $list_jabatan[$key] ?? '-', // Pakai strip jika jabatan kosong
+                    ]);
                 }
             }
         }
+        // }
 
         return redirect()->back()->with('success', 'Data tamu berhasil disimpan. Kode QR: ' . $generatedQrCode);
     }
