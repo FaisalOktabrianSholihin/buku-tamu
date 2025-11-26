@@ -17,11 +17,13 @@ use Filament\Pages\Page;
 use App\Models\Tamu;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
+use BackedEnum;
 
 class ScanQrCode extends Page
 {
     // Icon di Sidebar
     // protected static ?string $navigationIcon = 'heroicon-o-qr-code';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-qr-code';
     // Judul Menu
     protected static ?string $navigationLabel = 'Scan QR Tamu';
 

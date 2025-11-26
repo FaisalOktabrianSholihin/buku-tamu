@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DivisiSeeder::class,
             StatusSeeder::class,
+            VisitStatusSeeder::class,
         ]);
     }
 }

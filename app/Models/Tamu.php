@@ -23,6 +23,7 @@ class Tamu extends Model
         'status_tamu',
         'id_divisi', // FK ke Divisi
         'id_status', // FK ke Status
+        'id_visit_status', // FK ke visit status
         'keperluan',
         'qr_code',
     ];
@@ -41,6 +42,11 @@ class Tamu extends Model
     public function status()
     {
         return $this->belongsTo(Status::class, 'id_status');
+    }
+
+    public function visitStatus()
+    {
+        return $this->belongsTo(VisitStatus::class, 'id_visit_status');
     }
 
     public function pengiring()

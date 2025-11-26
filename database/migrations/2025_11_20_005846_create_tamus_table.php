@@ -26,6 +26,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_status')->nullable();
             $table->string('keperluan');
             $table->string('qr_code')->nullable();
+            $table->unsignedBigInteger('id_visit_status')->default(1);
             $table->timestamps();
         });
     }
