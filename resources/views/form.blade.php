@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Buku Tamu</title>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
         body {
@@ -279,27 +280,74 @@
         </form>
 
     </div>
+    {{-- Container Rahasia untuk generate QR Code (Tidak perlu ditampilkan ke user) --}}
+    <div id="qrcode-container" style="display:none;"></div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
+            // --- 1. LOGIKA AUTO-DOWNLOAD QR CODE (BARU) ---
+            // Kita cek apakah Controller mengirim session 'new_qr_code'
+            @if (session('new_qr_code'))
+                const codeString = "{{ session('new_qr_code') }}";
+                console.log("Mendownload QR untuk: " + codeString);
+
+                // 1. Buat elemen div sementara
+                const qrDiv = document.getElementById('qrcode-container');
+
+                // 2. Generate QR Code menggunakan library qrcode.js
+                // Kita beri waktu sedikit agar library selesai me-render
+                const qrCode = new QRCode(qrDiv, {
+                    text: codeString,
+                    width: 256, // Resolusi gambar
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+
+                // 3. Tunggu 500ms (0.5 detik) agar gambar jadi, lalu download
+                setTimeout(() => {
+                    const img = qrDiv.querySelector('img');
+
+                    if (img && img.src) {
+                        // Buat link download palsu
+                        const link = document.createElement('a');
+                        link.href = img.src;
+                        link.download = 'QR_TAMU_' + codeString + '.png'; // Nama file
+
+                        // Klik otomatis
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }, 500);
+            @endif
+
+
+            // --- 2. NOTIFIKASI (KODE LAMA ANDA) ---
+            const customAlert = document.getElementById('custom-success-notification');
+            if (customAlert) {
+                setTimeout(() => {
+                    customAlert.classList.remove('show');
+                    setTimeout(() => {
+                        customAlert.remove();
+                    }, 500);
+                }, 5000);
+            }
+
+            // --- 3. PENGIRING (KODE LAMA ANDA) ---
             const inputJumlah = document.getElementById('jumlah_tamu');
             const fieldsetPengiring = document.getElementById('fieldset-pengiring');
             const containerPengiring = document.getElementById('container-pengiring');
 
-            // Fungsi untuk generate form
             function generatePengiringForms() {
                 const totalTamu = parseInt(inputJumlah.value) || 1;
-
-                // Hitung jumlah pengiring (Total - 1 Tamu Utama)
                 const jumlahPengiring = totalTamu - 1;
-
-                // Kosongkan container dulu agar tidak duplikat
                 containerPengiring.innerHTML = '';
 
                 if (jumlahPengiring > 0) {
-                    // Tampilkan fieldset
                     fieldsetPengiring.style.display = 'block';
-
-                    // Loop untuk membuat input sesuai jumlah pengiring
                     for (let i = 1; i <= jumlahPengiring; i++) {
                         const html = `
                         <div class="pengiring-item" style="margin-bottom: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 15px;">
@@ -312,54 +360,40 @@
                                 <label>Jabatan Pengiring:</label>
                                 <input type="text" name="jabatan_pengiring[]" placeholder="Jabatan Pengiring ke-${i}">
                             </div>
-                        </div>
-                    `;
-                        // Masukkan ke dalam container
+                        </div>`;
                         containerPengiring.insertAdjacentHTML('beforeend', html);
                     }
                 } else {
-                    // Jika tamu cuma 1, sembunyikan fieldset pengiring
                     fieldsetPengiring.style.display = 'none';
                 }
             }
-
-            // Panggil fungsi saat user mengetik/mengubah angka
             inputJumlah.addEventListener('input', generatePengiringForms);
-
-            // Panggil sekali saat halaman dimuat (untuk handle old input jika validasi gagal)
             generatePengiringForms();
 
-            // --- LOGIKA TANDA TANGAN ---
+            // --- 4. TANDA TANGAN (KODE LAMA ANDA) ---
             const canvas = document.getElementById('signature-canvas');
             const signaturePad = new SignaturePad(canvas, {
-                backgroundColor: 'rgba(255, 255, 255, 0)', // Transparan atau Putih
+                backgroundColor: 'rgba(255, 255, 255, 0)',
                 penColor: 'rgb(0, 0, 0)'
             });
 
-            // Fungsi Resize agar canvas tidak gepeng/pecah di HP
             function resizeCanvas() {
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
                 canvas.width = canvas.offsetWidth * ratio;
                 canvas.height = canvas.offsetHeight * ratio;
                 canvas.getContext("2d").scale(ratio, ratio);
-                signaturePad.clear(); // Bersihkan saat resize
             }
             window.addEventListener("resize", resizeCanvas);
-            resizeCanvas(); // Panggil sekali saat awal load
+            resizeCanvas();
 
-            // Tombol Clear
             document.getElementById('clear-signature').addEventListener('click', function() {
                 signaturePad.clear();
             });
 
-            // Saat Submit Form, pindahkan gambar ke input hidden
             document.querySelector('form').addEventListener('submit', function(e) {
                 if (!signaturePad.isEmpty()) {
                     const dataURL = signaturePad.toDataURL('image/png');
                     document.getElementById('ttd_tamu_base64').value = dataURL;
-                } else {
-                    // Opsional: Jika tanda tangan wajib, uncomment baris ini:
-                    // e.preventDefault(); alert("Mohon tanda tangan terlebih dahulu.");
                 }
             });
         });

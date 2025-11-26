@@ -115,6 +115,9 @@ class BukuTamuController extends Controller
         }
         // }
 
-        return redirect()->back()->with('success', 'Data tamu berhasil disimpan. Kode QR: ' . $generatedQrCode);
+        // return redirect()->back()->with('success', 'Data tamu berhasil disimpan. Kode QR: ' . $generatedQrCode);
+        return redirect()->back()
+            ->with('success', 'Data berhasil disimpan. QR Code sedang didownload...')
+            ->with('new_qr_code', $generatedQrCode); // <--- KITA KIRIM KODENYA DISINI
     }
 }
