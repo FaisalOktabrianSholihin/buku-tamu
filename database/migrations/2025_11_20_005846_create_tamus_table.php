@@ -14,11 +14,16 @@ return new class extends Migration
         Schema::create('tamus', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
+            $table->string('jabatan');
             $table->string('instansi');
             $table->string('no_hp');
+            $table->string('jumlah_tamu');
+            $table->string('penerima_tamu');
+            $table->string('nopol_kendaraan');
+            $table->string('bidang_usaha');
+            $table->string('status_tamu');
             $table->unsignedBigInteger('id_divisi')->nullable();
             $table->unsignedBigInteger('id_status')->nullable();
-            $table->unsignedBigInteger('id_layanan')->nullable();
             $table->string('keperluan');
             $table->string('qr_code')->nullable();
             $table->timestamps();

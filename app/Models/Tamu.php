@@ -9,15 +9,20 @@ class Tamu extends Model
 {
     use HasFactory;
 
-    protected $table = 'tamus'; // Opsional, Laravel otomatis mendeteksi jamak, tapi aman ditulis.
+    protected $table = 'tamus';
 
     protected $fillable = [
         'nama',
+        'jabatan',
         'instansi',
         'no_hp',
-        'id_divisi',   // FK ke Divisi
-        'id_status',   // FK ke Status
-        'id_layanan',  // FK ke Layanan
+        'jumlah_tamu',
+        'penerima_tamu',
+        'nopol_kendaraan',
+        'bidang_usaha',
+        'status_tamu',
+        'id_divisi', // FK ke Divisi
+        'id_status', // FK ke Status
         'keperluan',
         'qr_code',
     ];
@@ -38,10 +43,9 @@ class Tamu extends Model
         return $this->belongsTo(Status::class, 'id_status');
     }
 
-    // Tamu menggunakan satu Layanan
-    public function layanan()
+    public function pengiring()
     {
-        return $this->belongsTo(Layanan::class, 'id_layanan');
+        return $this->hasMany(TamuPengiring::class, 'id_tamu');
     }
 
     /**
