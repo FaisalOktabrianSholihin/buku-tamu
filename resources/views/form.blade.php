@@ -324,7 +324,6 @@
                 }, 500);
             @endif
 
-
             // --- 2. NOTIFIKASI (KODE LAMA ANDA) ---
             const customAlert = document.getElementById('custom-success-notification');
             if (customAlert) {

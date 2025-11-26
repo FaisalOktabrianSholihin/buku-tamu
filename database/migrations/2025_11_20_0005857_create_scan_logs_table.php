@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('id_tamu');
             $table->unsignedBigInteger('id_user');
-            $table->string('role'); // satpam / operator / penerima / satpam_keluar
+            $table->string('role'); // satpam / operator / penerima 
             $table->timestamp('waktu_scan');
             $table->timestamps();
         });
