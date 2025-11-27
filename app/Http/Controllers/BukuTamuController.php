@@ -51,6 +51,7 @@ class BukuTamuController extends Controller
 
         // 6. Gabungkan menjadi format: 251126.M27.0001
         $generatedQrCode = "{$dateCode}.{$staticCode}.{$sequence}";
+        
 
         // --- SELESAI LOGIKA GENERATE QR CODE ---
 

@@ -54,6 +54,13 @@ class Tamu extends Model
         return $this->hasMany(TamuPengiring::class, 'id_tamu');
     }
 
+    // Relasi ke tabel Tanda Tangan (One-to-One)
+    // Tamu hanya punya 1 baris data tanda tangan (yang berisi ttd tamu, satpam, dll)
+    public function tandaTangan()
+    {
+        return $this->hasOne(TandaTangan::class, 'id_tamu');
+    }
+
     /**
      * Relasi ke tabel aktivitas (Children)
      */
