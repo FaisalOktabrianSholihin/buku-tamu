@@ -30,6 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->font('Poppins')
             ->brandName('Buku Tamu')
+            ->favicon(asset('images/logo-kunjunganku.png'))
             ->colors([
                 'primary' => Color::Green,
             ])

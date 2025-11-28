@@ -9,12 +9,12 @@ use App\Models\TandaTangan; // Load model tanda tangan
 use Filament\Notifications\Notification;
 use BackedEnum;
 
-class ScanQrCode extends Page
+class ValidasiPenerimaTamu extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-qr-code';
-    protected static ?string $navigationLabel = 'Validasi Satpam';
-    protected static ?string $title = 'Validasi Pos Satpam';
-    protected string $view = 'filament.pages.scan-qr-code';
+    protected static ?string $navigationLabel = 'Validasi Penerima Tamu';
+    protected static ?string $title = 'Validasi Penerima Tamu';
+    protected string $view = 'filament.pages.validasi-penerima-tamu';
 
     // State Data Tamu
     public $tamu_id;
@@ -39,7 +39,7 @@ class ScanQrCode extends Page
     public $pengirings_list = [];
 
     // Tanda Tangan
-    public $ttd_satpam_base64;
+    public $ttd_penerima_base64;
 
     public $is_found = false;
     public $qr_manual = '';
@@ -112,8 +112,8 @@ class ScanQrCode extends Page
         if ($tamu) {
 
             // 1. Cek Tanda Tangan
-            if (empty($this->ttd_satpam_base64)) {
-                Notification::make()->danger()->title('Tanda tangan satpam wajib diisi!')->send();
+            if (empty($this->ttd_penerima_base64)) {
+                Notification::make()->danger()->title('Tanda tangan penerima wajib diisi!')->send();
                 return;
             }
 
@@ -128,86 +128,86 @@ class ScanQrCode extends Page
 
             /*
         |--------------------------------------------------------------------------
-        | 3. Simpan TTD Satpam (FILE) ke STORAGE, BUKAN BASE64 KE DATABASE
+        | 3. Simpan TTD Penerima (FILE) ke STORAGE, BUKAN BASE64 KE DATABASE
         |--------------------------------------------------------------------------
         */
 
             // Hilangkan prefix base64
-            $image = str_replace('data:image/png;base64,', '', $this->ttd_satpam_base64);
+            $image = str_replace('data:image/png;base64,', '', $this->ttd_penerima_base64);
             $image = str_replace(' ', '+', $image);
             $imageData = base64_decode($image);
 
             // Nama file unik
-            $filename = 'ttd_satpam_' . $tamu->id . '_' . time() . '.png';
+            $filename = 'ttd_penerima_' . $tamu->id . '_' . time() . '.png';
 
             // Simpan ke storage/app/public/ttd
-            Storage::disk('public')->put('ttd/' . $filename, $imageData);
+            Storage::disk('public')->put('ttd_penerima/' . $filename, $imageData);
 
             // Simpan PATH ke database
             TandaTangan::updateOrCreate(
                 ['id_tamu' => $tamu->id],
                 [
-                    'ttd_satpam' => 'ttd/' . $filename,
+                    'ttd_penerima' => 'ttd_penerima/' . $filename,
                     'updated_at' => now(),
                 ]
             );
 
-            Notification::make()->success()->title('Tamu Berhasil Check-In & Validasi')->send();
+            Notification::make()->success()->title('Validasi Penerima Tamu berhasil')->send();
             $this->resetForm();
         }
     }
 
-    public function simpanTolakValidasi()
-    {
-        $tamu = Tamu::find($this->tamu_id);
+    // public function simpanTolakValidasi()
+    // {
+    //     $tamu = Tamu::find($this->tamu_id);
 
-        if ($tamu) {
+    //     if ($tamu) {
 
-            // 1. Cek Tanda Tangan
-            if (empty($this->ttd_satpam_base64)) {
-                Notification::make()->danger()->title('Tanda tangan satpam wajib diisi!')->send();
-                return;
-            }
+    //         // 1. Cek Tanda Tangan
+    //         if (empty($this->ttd_penerima_base64)) {
+    //             Notification::make()->danger()->title('Tanda tangan penerima tamu wajib diisi!')->send();
+    //             return;
+    //         }
 
-            // 2. Update Data Utama
-            $tamu->update([
-                'nama' => $this->nama,
-                'nopol_kendaraan' => $this->nopol_kendaraan,
-                'jumlah_tamu' => $this->jumlah_tamu,
-                // 'status_tamu' => 'Check In',
-                'id_visit_status' =>  6,
-            ]);
+    //         // 2. Update Data Utama
+    //         $tamu->update([
+    //             'nama' => $this->nama,
+    //             'nopol_kendaraan' => $this->nopol_kendaraan,
+    //             'jumlah_tamu' => $this->jumlah_tamu,
+    //             // 'status_tamu' => 'Check In',
+    //             'id_visit_status' =>  6,
+    //         ]);
 
-            /*
-        |--------------------------------------------------------------------------
-        | 3. Simpan TTD Satpam (FILE) ke STORAGE, BUKAN BASE64 KE DATABASE
-        |--------------------------------------------------------------------------
-        */
+    //         /*
+    //     |--------------------------------------------------------------------------
+    //     | 3. Simpan TTD Penerima Tamu (FILE) ke STORAGE, BUKAN BASE64 KE DATABASE
+    //     |--------------------------------------------------------------------------
+    //     */
 
-            // Hilangkan prefix base64
-            $image = str_replace('data:image/png;base64,', '', $this->ttd_satpam_base64);
-            $image = str_replace(' ', '+', $image);
-            $imageData = base64_decode($image);
+    //         // Hilangkan prefix base64
+    //         $image = str_replace('data:image/png;base64,', '', $this->ttd_penerima_base64);
+    //         $image = str_replace(' ', '+', $image);
+    //         $imageData = base64_decode($image);
 
-            // Nama file unik
-            $filename = 'ttd_satpam_' . $tamu->id . '_' . time() . '.png';
+    //         // Nama file unik
+    //         $filename = 'ttd_satpam_' . $tamu->id . '_' . time() . '.png';
 
-            // Simpan ke storage/app/public/ttd
-            Storage::disk('public')->put('ttd/' . $filename, $imageData);
+    //         // Simpan ke storage/app/public/ttd
+    //         Storage::disk('public')->put('ttd/' . $filename, $imageData);
 
-            // Simpan PATH ke database
-            TandaTangan::updateOrCreate(
-                ['id_tamu' => $tamu->id],
-                [
-                    'ttd_satpam' => 'ttd/' . $filename,
-                    'updated_at' => now(),
-                ]
-            );
+    //         // Simpan PATH ke database
+    //         TandaTangan::updateOrCreate(
+    //             ['id_tamu' => $tamu->id],
+    //             [
+    //                 'ttd_satpam' => 'ttd/' . $filename,
+    //                 'updated_at' => now(),
+    //             ]
+    //         );
 
-            Notification::make()->success()->title('Validasi Tamu Di Tolak')->send();
-            $this->resetForm();
-        }
-    }
+    //         Notification::make()->success()->title('Validasi Tamu Di Tolak')->send();
+    //         $this->resetForm();
+    //     }
+    // }
 
     public function resetForm()
     {
@@ -230,7 +230,7 @@ class ScanQrCode extends Page
             'agenda',
             'keterangan',
             'pengirings_list',
-            'ttd_satpam_base64'
+            'ttd_penerima_base64'
         ]);
 
         // Pastikan list di-reset ke array kosong

@@ -1,3 +1,7 @@
+{{-- <x-filament-panels::page>
+
+</x-filament-panels::page> --}}
+
 <x-filament-panels::page>
     {{-- Load Library Signature Pad & QR Code --}}
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>

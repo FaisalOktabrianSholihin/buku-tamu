@@ -12,6 +12,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use UnitEnum;
 use Filament\Tables\Table;
 
 class TamuResource extends Resource
@@ -21,6 +22,14 @@ class TamuResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-identification';
 
     protected static ?string $recordTitleAttribute = 'Tamu';
+
+    protected static ?string $navigationLabel = 'Tamu';
+
+    protected static ?string $modelLabel = 'Tamu';
+
+    protected static ?string $pluralModelLabel = 'Data Tamu';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Master Data';
 
     public static function form(Schema $schema): Schema
     {

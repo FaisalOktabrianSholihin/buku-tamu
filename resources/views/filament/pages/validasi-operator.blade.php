@@ -1,3 +1,7 @@
+{{-- <x-filament-panels::page>
+
+</x-filament-panels::page> --}}
+
 <x-filament-panels::page>
     {{-- Load Library Signature Pad & QR Code --}}
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
@@ -274,13 +278,13 @@
                                 </span>
                             </x-filament::button>
 
-                            <x-filament::button wire:click.prevent="simpanTolakValidasi" color="danger"
+                            {{-- <x-filament::button wire:click.prevent="simpanTolakValidasi" color="danger"
                                 size="lg" class="w-full" @click="save()">
                                 <span class="flex items-center justify-center gap-2">
                                     <span class="text-xl">❌</span>
                                     <span class="font-bold">TOLAK</span>
                                 </span>
-                            </x-filament::button>
+                            </x-filament::button> --}}
                         </div>
                     </div>
                 </div>
