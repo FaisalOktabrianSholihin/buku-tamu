@@ -240,18 +240,18 @@
                             },
                             clear() {
                                 this.signaturePad.clear();
-                                @this.set('ttd_satpam_base64', null);
+                                @this.set('ttd_penerima_base64', null);
                             },
                             save() {
                                 if (!this.signaturePad.isEmpty()) {
-                                    @this.set('ttd_satpam_base64', this.signaturePad.toDataURL());
+                                    @this.set('ttd_penerima_base64', this.signaturePad.toDataURL());
                                 }
                             }
                         }">
 
                         <h3 class="font-bold text-lg text-amber-900 dark:text-amber-100 mb-4 flex items-center gap-2">
                             <span>✍️</span>
-                            <span>Tanda Tangan Validasi Satpam</span>
+                            <span>Tanda Tangan Validasi Penerima</span>
                         </h3>
 
                         <div class="bg-white rounded-lg border-2 border-dashed border-amber-400 p-2">
@@ -278,13 +278,13 @@
                                 </span>
                             </x-filament::button>
 
-                            <x-filament::button wire:click.prevent="simpanTolakValidasi" color="danger"
+                            {{-- <x-filament::button wire:click.prevent="simpanTolakValidasi" color="danger"
                                 size="lg" class="w-full" @click="save()">
                                 <span class="flex items-center justify-center gap-2">
                                     <span class="text-xl">❌</span>
                                     <span class="font-bold">TOLAK</span>
                                 </span>
-                            </x-filament::button>
+                            </x-filament::button> --}}
                         </div>
                     </div>
                 </div>

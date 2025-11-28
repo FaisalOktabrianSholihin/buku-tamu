@@ -240,18 +240,18 @@
                             },
                             clear() {
                                 this.signaturePad.clear();
-                                @this.set('ttd_satpam_base64', null);
+                                @this.set('ttd_operator_base64', null);
                             },
                             save() {
                                 if (!this.signaturePad.isEmpty()) {
-                                    @this.set('ttd_satpam_base64', this.signaturePad.toDataURL());
+                                    @this.set('ttd_operator_base64', this.signaturePad.toDataURL());
                                 }
                             }
                         }">
 
                         <h3 class="font-bold text-lg text-amber-900 dark:text-amber-100 mb-4 flex items-center gap-2">
                             <span>✍️</span>
-                            <span>Tanda Tangan Validasi Satpam</span>
+                            <span>Tanda Tangan Validasi Operator</span>
                         </h3>
 
                         <div class="bg-white rounded-lg border-2 border-dashed border-amber-400 p-2">
