@@ -86,14 +86,23 @@
         .submit-button:hover {
             background-color: #008a12;
         }
+
+        /* Kartu canvas (hidden) */
+        #cardCanvas {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
+    <a href="/admin" class="login-btn">Login Admin</a>
+
 
     <div class="container">
 
-        <h2>📝 Form Buku Tamu Perusahaan</h2>
+
+        {{-- <h2>📝 Form Buku Tamu</h2> --}}
+        <h2>Buku Tamu <br>Mitratani Dua Tujuh</h2>
 
         {{-- Notifikasi sukses kustom --}}
         @if (session('success'))
@@ -107,7 +116,6 @@
             .custom-notification {
                 padding: 15px 20px;
                 background: #187e03;
-                /* Warna biru modern, ganti ke hijau jika suka */
                 color: white;
                 border-radius: 8px;
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -116,36 +124,27 @@
                 right: 20px;
                 z-index: 1000;
                 opacity: 0;
-                /* Mulai dengan transparan */
                 transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-                /* Animasi transisi */
                 transform: translateY(-20px);
-                /* Mulai agak di atas */
             }
 
             .custom-notification.show {
                 opacity: 1;
-                /* Tampilkan penuh saat ada class 'show' */
                 transform: translateY(0);
-                /* Geser ke posisi akhir */
             }
         </style>
 
         <script>
-            // Ambil elemen notifikasi
+            // Ambil elemen notifikasi (jika ada)
             const customAlert = document.getElementById('custom-success-notification');
 
             if (customAlert) {
-                // Pastikan notifikasi muncul dulu
                 setTimeout(() => {
-                    // Hapus class 'show' untuk memicu animasi menghilang (opacity ke 0)
                     customAlert.classList.remove('show');
-
-                    // Hapus elemen sepenuhnya setelah animasi selesai (0.5 detik)
                     setTimeout(() => {
                         customAlert.remove();
-                    }, 500); // 500ms = waktu yang sama dengan CSS transition
-                }, 5000); // 5000 ms = 5 detik (waktu tunggu)
+                    }, 500);
+                }, 5000);
             }
         </script>
 
@@ -236,28 +235,46 @@
             </fieldset>
 
             {{-- PENGIRING (DINAMIS) --}}
-            {{-- Fieldset ini akan disembunyikan defaultnya oleh CSS, muncul jika tamu > 1 --}}
             <fieldset id="fieldset-pengiring" style="display: none;">
                 <legend>Data Pengiring</legend>
-
-                {{-- Container kosong ini akan diisi oleh JavaScript --}}
                 <div id="container-pengiring"></div>
             </fieldset>
 
-            {{-- AGENDA --}}
+            {{-- PERSETUJUAN --}}
             <fieldset>
-                <legend>Detail Waktu & Agenda</legend>
+                <legend>Persetujuan Tamu</legend>
 
-                <div class="form-group">
-                    <label>Agenda:</label>
-                    <textarea name="agenda" rows="4" required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Keterangan Tambahan:</label>
-                    <textarea name="keterangan" rows="2"></textarea>
+                <div style="margin-bottom: 10px;">
+                    <label style="font-weight: bold; cursor:pointer;">
+                        <input type="checkbox" id="cek_persetujuan" style="transform: scale(1.3); margin-right: 8px;">
+                        Saya telah membaca dan menyetujui peraturan tamu
+                    </label>
                 </div>
             </fieldset>
+
+            <!-- POPUP -->
+            <div id="popup-rules"
+                style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.6); z-index:9999;">
+
+                <div
+                    style="background:white; width:90%; max-width:450px; margin:8% auto; padding:25px; border-radius:8px;">
+                    <h3 style="margin-top:0;">Peraturan Tamu</h3>
+
+                    <ol style="margin-left:20px; font-size:15px;">
+                        <li>Dilarang membawa barang berbahaya.</li>
+                        <li>Wajib menjaga ketertiban dan kebersihan area perusahaan.</li>
+                        <li>Wajib mengikuti instruksi keamanan dari petugas.</li>
+                        <li>Dilarang mengambil foto/video tanpa izin.</li>
+                    </ol>
+
+                    <button id="btn-setuju"
+                        style="margin-top:20px; width:100%; padding:10px; background:#00620c; 
+                       color:white; border:none; border-radius:5px; cursor:pointer;">
+                        Setuju & Lanjutkan
+                    </button>
+                </div>
+            </div>
 
             {{-- AREA TANDA TANGAN --}}
             <fieldset>
@@ -281,57 +298,229 @@
         </form>
 
     </div>
+
     {{-- Container Rahasia untuk generate QR Code (Tidak perlu ditampilkan ke user) --}}
     <div id="qrcode-container" style="display:none;"></div>
+
+    <!-- Canvas tempat desain kartu (hidden) -->
+    <canvas id="cardCanvas" width="800" height="1200" style="display:none;"></canvas>
+
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+
+    <script>
+        /**
+         * generateDesignedCard(qrData, qrCodeText, namaTamu)
+         * - qrData: base64 image data (data:image/png;base64,...)
+         * - qrCodeText: string yang ditampilkan di bawah QR
+         * - namaTamu: nama tamu yang akan ditampilkan
+         *
+         * Fungsi ini menggambar kartu di canvas #cardCanvas dan otomatis mendownloadnya.
+         */
+        function generateDesignedCard(qrData, qrCodeText, namaTamu) {
+            try {
+                const canvas = document.getElementById("cardCanvas");
+                const ctx = canvas.getContext("2d");
+
+                // Clear
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // ==== BACKGROUND PUTIH ====
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // ==== HEADER HIJAU ====
+                ctx.fillStyle = "#0FA958";
+                ctx.fillRect(0, 0, canvas.width, 200);
+
+                // ==== LOGO KIRI (opsional) - jika Anda mau menambahkan logo, bisa dimuat di sini ====
+                // contoh (jika ada logo di public/images/logo.png): 
+                // let logo = new Image(); logo.src = "/images/logo.png"; logo.onload = () => { ctx.drawImage(logo, 30, 30, 150, 140); }
+
+                // ==== TULISAN MITRATANI DUA TUJUH ====
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 36px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("PT. MITRATANI DUA TUJUH", canvas.width / 2, 125);
+
+                // Tarik QR sebagai gambar
+                let qrImg = new Image();
+                qrImg.crossOrigin = "anonymous";
+                qrImg.src = qrData;
+
+                qrImg.onload = function() {
+                    // Gambar QR di tengah
+                    const qrSize = 500;
+                    const qrX = (canvas.width - qrSize) / 2;
+                    const qrY = 260;
+                    ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+
+                    // ==== TEKS KODE QR ====
+                    ctx.fillStyle = "#000";
+                    ctx.font = "bold 28px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText(qrCodeText, canvas.width / 2, qrY + qrSize + 40);
+
+                    // ==== NAMA TAMU ====
+                    ctx.fillStyle = "#333";
+                    ctx.font = "bold 36px Arial";
+                    ctx.fillText(namaTamu, canvas.width / 2, qrY + qrSize + 95);
+
+                    // ==== FOOTER HIJAU MELENGKUNG ====
+                    ctx.fillStyle = "#0FA958";
+                    ctx.beginPath();
+                    ctx.moveTo(0, 1050);
+                    ctx.quadraticCurveTo(canvas.width / 2, 1250, canvas.width, 1050);
+                    ctx.lineTo(canvas.width, canvas.height);
+                    ctx.lineTo(0, canvas.height);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // ==== Tambahan teks kecil di footer ====
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "14px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText("Terima kasih telah berkunjung — PT. Mitratani Dua Tujuh", canvas.width / 2, canvas
+                        .height - 30);
+
+                    // ==== DOWNLOAD OTOMATIS KARTU ====
+                    try {
+                        const cardURL = canvas.toDataURL("image/png");
+                        const a = document.createElement("a");
+                        a.href = cardURL;
+                        // aman menggunakan qrCodeText (jika ada karakter aneh, replace spasi dengan underscore)
+                        const safeName = String(qrCodeText || "tamu").replace(/\s+/g, "_");
+                        a.download = "KARTU_TAMU_" + safeName + ".png";
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    } catch (err) {
+                        console.error("Gagal download kartu:", err);
+                    }
+                };
+
+                qrImg.onerror = function(e) {
+                    console.error("Gagal memuat gambar QR untuk kartu:", e);
+                };
+            } catch (err) {
+                console.error("generateDesignedCard error:", err);
+            }
+        }
+    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            // --- 1. LOGIKA AUTO-DOWNLOAD QR CODE (BARU) ---
-            // Kita cek apakah Controller mengirim session 'new_qr_code'
+            // --- 1. LOGIKA AUTO-DOWNLOAD QR CODE & GENERATE KARTU (BARU) ---
             @if (session('new_qr_code'))
-                const codeString = "{{ session('new_qr_code') }}";
-                console.log("Mendownload QR untuk: " + codeString);
+                (function() {
+                    const codeString = "{{ session('new_qr_code') }}";
+                    console.log("Mendownload QR untuk: " + codeString);
 
-                // 1. Buat elemen div sementara
-                const qrDiv = document.getElementById('qrcode-container');
+                    // 1. Temp container (qrcode-container) sudah ada di DOM
+                    const qrDiv = document.getElementById('qrcode-container');
 
-                // 2. Generate QR Code menggunakan library qrcode.js
-                // Kita beri waktu sedikit agar library selesai me-render
-                const qrCode = new QRCode(qrDiv, {
-                    text: codeString,
-                    width: 256, // Resolusi gambar
-                    height: 256,
-                    colorDark: "#000000",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
+                    // 2. Generate QR Code menggunakan qrcode.js
+                    const qrCode = new QRCode(qrDiv, {
+                        text: codeString,
+                        width: 256,
+                        height: 256,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
 
-                // 3. Tunggu 500ms (0.5 detik) agar gambar jadi, lalu download
-                setTimeout(() => {
-                    const img = qrDiv.querySelector('img');
+                    // 3. Tunggu sebentar agar library selesai me-render.
+                    // Lebih andal: cek apakah ada elemen <img> lalu tunggu load event atau gunakan interval kecil.
+                    const tryFetchImg = () => {
+                        const img = qrDiv.querySelector('img');
 
-                    if (img && img.src) {
-                        // Buat link download palsu
-                        const link = document.createElement('a');
-                        link.href = img.src;
-                        link.download = 'QR_TAMU_' + codeString + '.png'; // Nama file
+                        if (img && img.src) {
+                            // // 3.a Download QR biasa
+                            // try {
+                            //     const link = document.createElement('a');
+                            //     link.href = img.src;
+                            //     link.download = 'QR_TAMU_' + codeString + '.png';
+                            //     document.body.appendChild(link);
+                            //     link.click();
+                            //     document.body.removeChild(link);
+                            // } catch (e) {
+                            //     console.error("Gagal auto-download QR:", e);
+                            // }
 
-                        // Klik otomatis
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    }
-                }, 500);
+                            // 3.b Generate kartu desain (jika ingin gunakan nama tamu, ambil dari session/old)
+                            const namaTamu = "{{ session('nama') ?? (old('nama') ?? 'Tamu') }}";
+
+                            // Jika gambar sudah complete, panggil langsung; bila belum, tunggu onload.
+                            if (img.complete) {
+                                generateDesignedCard(img.src, codeString, namaTamu);
+                            } else {
+                                img.onload = function() {
+                                    generateDesignedCard(img.src, codeString, namaTamu);
+                                };
+                            }
+
+                            return true;
+                        }
+                        return false;
+                    };
+
+                    // Coba berkali (maks 20x) setiap 200ms sampai ketemu gambar (atau timeout)
+                    let attempts = 0;
+                    const intervalId = setInterval(() => {
+                        attempts++;
+                        if (tryFetchImg() || attempts > 20) {
+                            clearInterval(intervalId);
+                            if (attempts > 20) {
+                                // fallback: coba sekali pakai toDataURL dari canvas QR (jika qrcode.js membuat canvas)
+                                const canvasInside = qrDiv.querySelector('canvas');
+                                if (canvasInside) {
+                                    try {
+                                        const dataURL = canvasInside.toDataURL('image/png');
+                                        // download
+                                        const link = document.createElement('a');
+                                        link.href = dataURL;
+                                        link.download = 'QR_TAMU_' + codeString + '.png';
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+
+                                        // generate card
+                                        const namaTamu =
+                                            "{{ session('nama') ?? (old('nama') ?? 'Tamu') }}";
+                                        generateDesignedCard(dataURL, codeString, namaTamu);
+                                    } catch (err) {
+                                        console.error("Fallback: gagal ambil canvas QR:", err);
+                                    }
+                                } else {
+                                    console.warn(
+                                        "Tidak dapat menemukan elemen img atau canvas QR setelah beberapa percobaan."
+                                    );
+                                }
+                            }
+                        }
+                    }, 200);
+                })();
             @endif
 
             // --- 2. NOTIFIKASI (KODE LAMA ANDA) ---
-            const customAlert = document.getElementById('custom-success-notification');
-            if (customAlert) {
+            const customAlert2 = document.getElementById('custom-success-notification');
+            if (customAlert2) {
                 setTimeout(() => {
-                    customAlert.classList.remove('show');
+                    customAlert2.classList.remove('show');
                     setTimeout(() => {
-                        customAlert.remove();
+                        customAlert2.remove();
                     }, 500);
                 }, 5000);
             }
@@ -396,8 +585,39 @@
                     document.getElementById('ttd_tamu_base64').value = dataURL;
                 }
             });
+
+            // === POPUP PERATURAN TAMU ===
+            const checkbox = document.getElementById('cek_persetujuan');
+            const popup = document.getElementById('popup-rules');
+            const btnSetuju = document.getElementById('btn-setuju');
+
+            // Saat checkbox disentuh
+            checkbox.addEventListener('click', function(e) {
+                if (!checkbox.checked) {
+                    e.preventDefault(); // jangan centang
+                    popup.style.display = "block"; // tampilkan popup
+                }
+            });
+
+            // Ketika tombol SETUJU ditekan
+            btnSetuju.addEventListener('click', function(e) {
+                e.preventDefault(); // cegah submit FORM
+                popup.style.display = "none";
+                checkbox.checked = true; // centang otomatis
+            });
+
+
         });
     </script>
+
+    <footer class="footer-copyright"
+        style="text-align:center; margin-top: 40px; padding: 20px 10px; background:#f7f7f7; color:#444; border-top:1px solid #ddd;">
+        <p style="font-size: 14px; margin:0;">
+            © 2025 PT. Mitratani Dua Tujuh. Dikelola oleh Tim IT Mitratani.<br>
+            Semua Hak Cipta Dilindungi Undang-Undang.
+        </p>
+    </footer>
+
 </body>
 
 </html>
