@@ -219,11 +219,11 @@
 
                 <div class="form-group">
                     <label>Status:</label>
-                    <select name="status_tamu" required>
+                    <select name="status" required>
                         <option value="">-- Pilih Status --</option>
-                        <option value="Supplier">Supplier</option>
-                        <option value="Customer/Buyer">Customer / Buyer</option>
-                        <option value="Umum">Umum</option>
+                        @foreach (\App\Models\Status::all() as $d)
+                            <option value="{{ $d->id }}">{{ $d->nama_status }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -258,14 +258,45 @@
             background:rgba(0,0,0,0.6); z-index:9999;">
 
                 <div
-                    style="background:white; width:90%; max-width:450px; margin:8% auto; padding:25px; border-radius:8px;">
-                    <h3 style="margin-top:0;">Peraturan Tamu</h3>
+                    style="background:white; width:90%; max-width:650px; margin:8% auto; padding:25px; border-radius:8px;">
+                    {{-- <h3 style="margin-top:0;">Peraturan Tamu Perusahaan</h3>
 
                     <ol style="margin-left:20px; font-size:15px;">
                         <li>Dilarang membawa barang berbahaya.</li>
                         <li>Wajib menjaga ketertiban dan kebersihan area perusahaan.</li>
                         <li>Wajib mengikuti instruksi keamanan dari petugas.</li>
                         <li>Dilarang mengambil foto/video tanpa izin.</li>
+                    </ol> --}}
+
+                    <h3 style="margin-top:0;">Peraturan Tamu Perusahaan</h3>
+
+                    <ol style="margin-left:20px; font-size:15px;">
+                        <li>Dilarang memasuki area yang teridentifikasi area terbatas tanpa pendamping. Jika
+                            diperlukan
+                            hubungi petugas.</li>
+                        <li>Semua tamu dimohon untuk memakai Visitor ID yang telah disediakan.</li>
+                        <li>Membuang sampah & puntung rokok pada tempatnya, dan tidak diperkenankan meludah
+                            sembarangan.
+                        </li>
+                        <li>Merokok hanya diperbolehkan di area khusus merokok (smoking area).</li>
+                        <li>Tidak diperkenankan makan, minum dan atau membawa makanan, minuman yang memungkinkan
+                            mengandung allergen ke dalam ruang proses.</li>
+                        <li>Mencuci tangan sebelum masuk ruang proses.</li>
+                        <li>Gunakan pakaian (khusus) sesuai dengan yang dipersyaratkan jika memasuki area tertentu
+                            (dalam ruang proses/pengolahan), dan dilarang mengenakannya di area luar proses.</li>
+                        <li>Tidak diperkenankan mengambil dokumentasi & membawa ponsel, kamera, serta alat komunikasi
+                            lain di area proses tanpa izin (Pabrik/pengolahan, gudang, utilitas).</li>
+                        <li>Dilarang membawa produk jadi dan barang-barang lain keluar area tanpa seijin dari
+                            manajemen
+                            PT Mitratani Dua Tujuh.</li>
+                        <li>Semua tamu diharap menjaga sarana dan prasarana di area PT. Mitratani Dua Tujuh.</li>
+                        <li>Dilarang memberikan tip ke petugas karyawan Mitratani Dua Tujuh.</li>
+                        <li>Tamu/Visitor wajib melapor dan menyerahkan ID Card, Form Visitor sebelum meninggalkan
+                            area
+                            PT Mitratani Dua Tujuh.</li>
+                        <li>Bila melihat keadaan darurat mohon hubungi pihak berwenang (security, pihak terkait).
+                        </li>
+                        <li>Berpakaian rapi dan sopan (tidak diperkenankan memakai celana pendek dan singlet).</li>
                     </ol>
 
                     <button id="btn-setuju"
@@ -460,7 +491,7 @@
                             // }
 
                             // 3.b Generate kartu desain (jika ingin gunakan nama tamu, ambil dari session/old)
-                            const namaTamu = "{{ session('nama') ?? (old('nama') ?? 'Tamu') }}";
+                            const namaTamu = "{{ session('nama_tamu') ?? (old('nama') ?? 'Tamu') }}";
 
                             // Jika gambar sudah complete, panggil langsung; bila belum, tunggu onload.
                             if (img.complete) {
@@ -498,7 +529,7 @@
 
                                         // generate card
                                         const namaTamu =
-                                            "{{ session('nama') ?? (old('nama') ?? 'Tamu') }}";
+                                            "{{ session('nama_tamu') ?? (old('nama') ?? 'Tamu') }}";
                                         generateDesignedCard(dataURL, codeString, namaTamu);
                                     } catch (err) {
                                         console.error("Fallback: gagal ambil canvas QR:", err);
@@ -613,7 +644,7 @@
     <footer class="footer-copyright"
         style="text-align:center; margin-top: 40px; padding: 20px 10px; background:#f7f7f7; color:#444; border-top:1px solid #ddd;">
         <p style="font-size: 14px; margin:0;">
-            © 2025 PT. Mitratani Dua Tujuh. Dikelola oleh Tim IT Mitratani.<br>
+            © 2025 PT Mitratani Dua Tujuh. Dikelola oleh Teknologi Informasi.<br>
             Semua Hak Cipta Dilindungi Undang-Undang.
         </p>
     </footer>

@@ -52,8 +52,8 @@ class DivisiResource extends Resource
     {
         return [
             'index' => ListDivisis::route('/'),
-            'create' => CreateDivisi::route('/create'),
-            'edit' => EditDivisi::route('/{record}/edit'),
+            // 'create' => CreateDivisi::route('/create'),
+            // 'edit' => EditDivisi::route('/{record}/edit'),
         ];
     }
 }

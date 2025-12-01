@@ -19,6 +19,7 @@ class VisitStatusSeeder extends Seeder
             ['status' => 'Berhasil Validasi Operator', 'deskripsi' => 'Operator telah memvalidasi data tamu.'],
             ['status' => 'Telah Bertemu Penerima Tamu', 'deskripsi' => 'Tamu telah bertemu dengan penerima tamu.'],
             ['status' => 'Kunjungan Selesai', 'deskripsi' => 'Tamu telah meninggalkan lokasi.'],
+            ['status' => 'Kunjungan Ditolak', 'deskripsi' => 'Tamu telah ditolak.'],
         ];
 
         foreach ($visit as $visits) {

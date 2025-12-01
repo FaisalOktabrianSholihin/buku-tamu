@@ -51,7 +51,7 @@ class BukuTamuController extends Controller
 
         // 6. Gabungkan menjadi format: 251126.M27.0001
         $generatedQrCode = "{$dateCode}.{$staticCode}.{$sequence}";
-        
+
 
         // --- SELESAI LOGIKA GENERATE QR CODE ---
 
@@ -66,7 +66,7 @@ class BukuTamuController extends Controller
             'bidang_usaha' => $request->bidang_usaha,
             'status_tamu' => $request->status_tamu,
             'id_divisi' => $request->divisi,
-            'id_status' => 1,
+            'id_status' => $request->status,
             'keperluan' => $request->keperluan,
             'qr_code' => $generatedQrCode,
         ]);

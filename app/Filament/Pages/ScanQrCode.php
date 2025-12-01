@@ -12,7 +12,7 @@ use BackedEnum;
 class ScanQrCode extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-qr-code';
-    protected static ?string $navigationLabel = 'Validasi Satpam';
+    protected static ?string $navigationLabel = 'Validasi Satpam (Masuk)';
     protected static ?string $title = 'Validasi Pos Satpam';
     protected string $view = 'filament.pages.scan-qr-code';
 
@@ -122,7 +122,6 @@ class ScanQrCode extends Page
                 'nama' => $this->nama,
                 'nopol_kendaraan' => $this->nopol_kendaraan,
                 'jumlah_tamu' => $this->jumlah_tamu,
-                // 'status_tamu' => 'Check In',
                 'id_visit_status' =>  2,
             ]);
 
@@ -174,7 +173,6 @@ class ScanQrCode extends Page
                 'nama' => $this->nama,
                 'nopol_kendaraan' => $this->nopol_kendaraan,
                 'jumlah_tamu' => $this->jumlah_tamu,
-                // 'status_tamu' => 'Check In',
                 'id_visit_status' =>  6,
             ]);
 

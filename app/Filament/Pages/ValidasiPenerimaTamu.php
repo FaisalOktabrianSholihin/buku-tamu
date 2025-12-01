@@ -122,8 +122,7 @@ class ValidasiPenerimaTamu extends Page
                 'nama' => $this->nama,
                 'nopol_kendaraan' => $this->nopol_kendaraan,
                 'jumlah_tamu' => $this->jumlah_tamu,
-                // 'status_tamu' => 'Check In',
-                'id_visit_status' =>  2,
+                'id_visit_status' =>  4,
             ]);
 
             /*

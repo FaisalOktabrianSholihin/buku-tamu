@@ -20,12 +20,12 @@ class Tamu extends Model
         'penerima_tamu',
         'nopol_kendaraan',
         'bidang_usaha',
-        'status_tamu',
         'id_divisi', // FK ke Divisi
         'id_status', // FK ke Status
         'id_visit_status', // FK ke visit status
         'keperluan',
         'qr_code',
+        'pdf_view_count',
     ];
 
     /**
@@ -37,7 +37,7 @@ class Tamu extends Model
     {
         return $this->belongsTo(Divisi::class, 'id_divisi');
     }
-    
+
     // Tamu memiliki satu Status saat ini
     public function status()
     {

@@ -52,8 +52,8 @@ class TamuResource extends Resource
     {
         return [
             'index' => ListTamus::route('/'),
-            'create' => CreateTamu::route('/create'),
-            'edit' => EditTamu::route('/{record}/edit'),
+            // 'create' => CreateTamu::route('/create'),
+            // 'edit' => EditTamu::route('/{record}/edit'),
         ];
     }
 }

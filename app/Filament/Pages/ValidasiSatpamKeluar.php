@@ -8,13 +8,18 @@ use Illuminate\Support\Facades\Storage; // Untuk simpan file gambar
 use App\Models\TandaTangan; // Load model tanda tangan
 use Filament\Notifications\Notification;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
 
-class ValidasiOperator extends Page
+class ValidasiSatpamKeluar extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-qr-code';
-    protected static ?string $navigationLabel = 'Validasi Operator';
-    protected static ?string $title = 'Validasi Operator';
-    protected string $view = 'filament.pages.validasi-operator';
+
+    protected static ?string $navigationLabel = 'Validasi Satpam (Keluar)';
+
+    protected static ?string $title = 'Validasi Pos Satpam';
+
+    protected string $view = 'filament.pages.validasi-satpam-keluar';
 
     // State Data Tamu
     public $tamu_id;
@@ -39,7 +44,7 @@ class ValidasiOperator extends Page
     public $pengirings_list = [];
 
     // Tanda Tangan
-    public $ttd_operator_base64;
+    public $ttd_satpam_base64;
 
     public $is_found = false;
     public $qr_manual = '';
@@ -105,55 +110,50 @@ class ValidasiOperator extends Page
     }
 
     // --- LOGIC SIMPAN DIPERBAIKI ---
-    public function simpanValidasi()
+    public function simpanAction(): Action
     {
-        $tamu = Tamu::find($this->tamu_id);
+        return Action::make('simpanAction')
+            ->label('SETUJU') // Label tombol
+            ->color('success')
+            ->size('lg')
+            ->icon('heroicon-o-check-circle')
+            // ->requiresConfirmation() // Tidak perlu ini karena sudah ada ->form()
+            ->modalHeading('Konfirmasi Keluar')
+            ->modalDescription('Masukkan Nomor Seal/Slip/Gembok untuk memvalidasi kendaraan keluar.')
+            // ->modalDescription1('Berita tanda "-" jika tamu (non-ekspedisi)')
+            // ->modalDescription2('Pastikan Nopol kendaraan keluar sama dengan data QR')
+            ->modalSubmitActionLabel('Simpan & Validasi')
+            ->form([
+                // Input No Seal muncul di dalam Pop-up
+                TextInput::make('no_seal')
+                    ->label('Nomor (Seal/Slip/Gembok)')
+                    ->required() // Wajib diisi
+                    ->placeholder('Contoh: S-12345'),
+            ])
+            ->action(function (array $data) {
+                // $data berisi input dari form modal (no_seal)
 
-        if ($tamu) {
+                // 1. Cek dulu apakah Nopol diisi (dari inputan di halaman utama)
+                // if (empty($this->nopol_kendaraan)) {
+                //    Notification::make()->warning()->title('Nopol Kendaraan Wajib Diisi!')->send();
+                //    $this->halt(); // Hentikan proses jika nopol kosong
+                // }
 
-            // 1. Cek Tanda Tangan
-            if (empty($this->ttd_operator_base64)) {
-                Notification::make()->danger()->title('Tanda tangan operator wajib diisi!')->send();
-                return;
-            }
+                $tamu = Tamu::find($this->tamu_id);
 
-            // 2. Update Data Utama
-            $tamu->update([
-                'nama' => $this->nama,
-                'nopol_kendaraan' => $this->nopol_kendaraan,
-                'jumlah_tamu' => $this->jumlah_tamu,
-                'id_visit_status' =>  3,
-            ]);
+                if ($tamu) {
+                    $tamu->update([
+                        'nama' => $this->nama,
+                        'nopol_kendaraan' => $this->nopol_kendaraan, // Ambil dari wire:model di view
+                        'jumlah_tamu' => $this->jumlah_tamu,
+                        'no_seal' => $data['no_seal'], // <--- SIMPAN NO SEAL DARI POPUP
+                        'id_visit_status' => 5, // Status Keluar
+                    ]);
 
-            /*
-        |--------------------------------------------------------------------------
-        | 3. Simpan TTD Operator (FILE) ke STORAGE, BUKAN BASE64 KE DATABASE
-        |--------------------------------------------------------------------------
-        */
-
-            // Hilangkan prefix base64
-            $image = str_replace('data:image/png;base64,', '', $this->ttd_operator_base64);
-            $image = str_replace(' ', '+', $image);
-            $imageData = base64_decode($image);
-
-            // Nama file unik
-            $filename = 'ttd_operator_' . $tamu->id . '_' . time() . '.png';
-
-            // Simpan ke storage/app/public/ttd
-            Storage::disk('public')->put('ttd_operator/' . $filename, $imageData);
-
-            // Simpan PATH ke database
-            TandaTangan::updateOrCreate(
-                ['id_tamu' => $tamu->id],
-                [
-                    'ttd_operator' => 'ttd_operator/' . $filename,
-                    'updated_at' => now(),
-                ]
-            );
-
-            Notification::make()->success()->title('Validasi Operator Berhasil')->send();
-            $this->resetForm();
-        }
+                    Notification::make()->success()->title('Kunjungan Selesai & No Seal Disimpan')->send();
+                    $this->resetForm();
+                }
+            });
     }
 
     // public function simpanTolakValidasi()
@@ -163,8 +163,8 @@ class ValidasiOperator extends Page
     //     if ($tamu) {
 
     //         // 1. Cek Tanda Tangan
-    //         if (empty($this->ttd_operator_base64)) {
-    //             Notification::make()->danger()->title('Tanda tangan operator wajib diisi!')->send();
+    //         if (empty($this->ttd_satpam_base64)) {
+    //             Notification::make()->danger()->title('Tanda tangan satpam wajib diisi!')->send();
     //             return;
     //         }
 
@@ -179,26 +179,26 @@ class ValidasiOperator extends Page
 
     //         /*
     //     |--------------------------------------------------------------------------
-    //     | 3. Simpan TTD Operator (FILE) ke STORAGE, BUKAN BASE64 KE DATABASE
+    //     | 3. Simpan TTD Satpam (FILE) ke STORAGE, BUKAN BASE64 KE DATABASE
     //     |--------------------------------------------------------------------------
     //     */
 
     //         // Hilangkan prefix base64
-    //         $image = str_replace('data:image/png;base64,', '', $this->ttd_operator_base64);
+    //         $image = str_replace('data:image/png;base64,', '', $this->ttd_satpam_base64);
     //         $image = str_replace(' ', '+', $image);
     //         $imageData = base64_decode($image);
 
     //         // Nama file unik
-    //         $filename = 'ttd_operator_' . $tamu->id . '_' . time() . '.png';
+    //         $filename = 'ttd_satpam_' . $tamu->id . '_' . time() . '.png';
 
     //         // Simpan ke storage/app/public/ttd
-    //         Storage::disk('public')->put('ttd_operator/' . $filename, $imageData);
+    //         Storage::disk('public')->put('ttd/' . $filename, $imageData);
 
     //         // Simpan PATH ke database
     //         TandaTangan::updateOrCreate(
     //             ['id_tamu' => $tamu->id],
     //             [
-    //                 'ttd_operator' => 'ttd_operator/' . $filename,
+    //                 'ttd_satpam' => 'ttd/' . $filename,
     //                 'updated_at' => now(),
     //             ]
     //         );
@@ -229,7 +229,7 @@ class ValidasiOperator extends Page
             'agenda',
             'keterangan',
             'pengirings_list',
-            'ttd_operator_base64'
+            // 'ttd_satpam_base64'
         ]);
 
         // Pastikan list di-reset ke array kosong
