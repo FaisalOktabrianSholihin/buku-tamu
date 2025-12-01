@@ -37,7 +37,7 @@ class Tamu extends Model
     {
         return $this->belongsTo(Divisi::class, 'id_divisi');
     }
-
+    
     // Tamu memiliki satu Status saat ini
     public function status()
     {
